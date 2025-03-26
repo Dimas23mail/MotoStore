@@ -2,9 +2,9 @@ from aiogram.utils import markdown
 
 
 def make_string_for_output(source: tuple) -> str:
-    result = (f"{markdown.hbold(source[0])}\n{markdown.hbold(source[1])}\n\n{source[2]}\n\n{markdown.hbold('Адрес: ')}"
-              f"{markdown.hcode(source[3])}\n{markdown.hbold('Телефон: ')}"
-              f"{markdown.hcode(make_telephone_number(source[4]))}")
+    result = (f"{markdown.hbold(source[0])}\n\nг. {markdown.hbold(source[1])}\n\n{markdown.hbold('Адрес: ')}"
+              f"{markdown.hcode(source[2])}\n{markdown.hbold('Телефон: ')}"
+              f"{markdown.hcode(make_telephone_number(source[3]))}")
     return result
 
 

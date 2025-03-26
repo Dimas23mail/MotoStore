@@ -3,8 +3,9 @@ from aiogram.fsm.context import FSMContext
 
 from keyboards.reply_keyboard import get_keyboard
 from storage import AdminToolsModule
-from keyboards import cancel_keyboard, admin_change_products_menu, build_change_record_kb, build_delete_photo_record_kb
-from config import moto_db
+from keyboards import cancel_keyboard, admin_change_products_menu, build_change_record_kb, build_delete_photo_record_kb, \
+    admin_change_category_products
+from config import moto_db, ADMIN_ID
 from utils import make_string_for_output
 
 router = Router()
@@ -93,6 +94,17 @@ async def deleting_product_handler(message: types.Message, state: FSMContext):
         text = "Отсутствуют площадки для удаления.\nВыберите действие."
     await message.answer(
         text=text,
+        reply_markup=keyboard
+    )
+
+
+@router.message(AdminToolsModule.change_products_menu, F.text.casefold() == "изменить категории товаров",
+                F.from_user.id.in_(ADMIN_ID))
+async def change_contacts_menu(message: types.Message, state: FSMContext) -> None:
+    await state.set_state(AdminToolsModule.change_category_menu)
+    keyboard = admin_change_category_products
+    await message.answer(
+        text="Вы перешли в меню изменения категорий товаров. Выберите действие 👇:",
         reply_markup=keyboard
     )
 

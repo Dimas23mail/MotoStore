@@ -7,6 +7,7 @@ from aiogram.fsm.state import default_state
 from config import ADMIN_ID, moto_db
 from keyboards import (start_client_reply_keyboard, start_admin_reply_keyboard, admin_main_menu,
                        admin_change_place_info, admin_change_category_products)
+from keyboards.admin_reply_keyboards import admin_change_contact_menu, admin_change_products_menu
 from storage import AdminToolsModule, ClientToolsModule
 
 router = Router(name=__name__)
@@ -23,13 +24,18 @@ async def cancel_base_handler(message: types.Message, state: FSMContext):
 
     changing_category_states = (AdminToolsModule.adding_category, AdminToolsModule.deleting_category)
 
-    changing_category_menu_states = (AdminToolsModule.change_category_menu, )
+    changing_category_menu_states = (AdminToolsModule.change_category_menu, AdminToolsModule.change_contact_menu)
+
+    #  changing_contacts_menu = (AdminToolsModule.change_contact_menu, )
+
+    adding_contacts_states = (AdminToolsModule.adding_contact_title, AdminToolsModule.adding_contact_city,
+                              AdminToolsModule.adding_contact_address, AdminToolsModule.adding_contact_phone)
 
     print("cancel button")
     current_state = await state.get_state()
     print(f"current state = {current_state}")
 
-    keyboard = admin_change_category_products
+    keyboard = start_admin_reply_keyboard
     text = "Вы вышли в главное меню. Выберите пункт меню 👇:"
 
     if current_state in changing_category_states:
@@ -37,9 +43,13 @@ async def cancel_base_handler(message: types.Message, state: FSMContext):
         await state.set_state(AdminToolsModule.change_category_menu)
         text = "Вы вышли в меню изменения категории товаров. Выберите пункт меню 👇:"
     elif current_state in changing_category_menu_states:
-        keyboard = admin_main_menu
-        await state.set_state(AdminToolsModule.main_menu_admin)
-        text = "Вы вышли в главное меню администратора. Выберите пункт меню 👇:"
+        keyboard = admin_change_products_menu
+        await state.set_state(AdminToolsModule.change_products_menu)
+        text = "Вы вышли в главное меню изменения товаров. Выберите пункт меню 👇:"
+    elif current_state in adding_contacts_states:
+        keyboard = admin_change_contact_menu
+        await state.set_state(AdminToolsModule.change_contact_menu)
+        text = "Вы вышли в меню изменения контактных данных. Выберите пункт меню 👇:"
     elif current_state in admin_main_menu_states:
         keyboard = start_admin_reply_keyboard
         await state.set_state(AdminToolsModule.main_state_admin)

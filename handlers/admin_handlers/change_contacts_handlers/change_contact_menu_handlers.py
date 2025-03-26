@@ -20,6 +20,7 @@ async def adding_contact_menu_handler(message: types.Message, state: FSMContext)
 @router.message(AdminToolsModule.change_contact_menu, F.text.casefold() == "добавить данные ➕")
 async def adding_contact_menu_handler(message: types.Message, state: FSMContext):
     await state.set_state(AdminToolsModule.adding_contact_title)
+    await state.update_data(step=[AdminToolsModule.change_contact_menu,])
     await message.answer(text="Вы перешли в меню добавления контактных данных.\nВведите название магазина.",
                          reply_markup=cancel_keyboard)
 

@@ -137,7 +137,7 @@ class RolizMotoDB:
 
         async with self.lock:
             create_table_contacts_db = '''
-                CREATE TABLE IF NOT EXIST contacts_db (
+                CREATE TABLE IF NOT EXISTS contacts_db (
                 contact_id INTEGER PRIMARY KEY AUTOINCREMENT,
                 title TEXT,
                 city TEXT,
@@ -156,6 +156,17 @@ class RolizMotoDB:
                 INSERT INTO categories_db (category_name) VALUES (?)
             '''
             await self.db.execute(save_category, (category, ))
+            await self.db.commit()
+        return True
+
+    async def save_contacts(self, source_tuple: tuple = None) -> bool:
+        if source_tuple is None:
+            return False
+        async with self.lock:
+            save_contact = '''
+                INSERT INTO contacts_db (title, city, address, phone) VALUES (?, ?, ?, ?)
+            '''
+            await self.db.execute(save_contact, source_tuple)
             await self.db.commit()
         return True
 

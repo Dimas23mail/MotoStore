@@ -54,17 +54,6 @@ async def change_contacts_menu(message: types.Message, state: FSMContext) -> Non
     )
 
 
-@router.message(AdminToolsModule.main_menu_admin, F.text.casefold() == "изменить категории товаров",
-                F.from_user.id.in_(ADMIN_ID))
-async def change_contacts_menu(message: types.Message, state: FSMContext) -> None:
-    await state.set_state(AdminToolsModule.change_category_menu)
-    keyboard = admin_change_category_products
-    await message.answer(
-        text="Вы перешли в меню изменения категорий товаров. Выберите действие 👇:",
-        reply_markup=keyboard
-    )
-
-
 @router.message(AdminToolsModule.main_menu_admin)
 async def wrong_change_menu(message: types.Message) -> None:
     keyboard = admin_main_menu
