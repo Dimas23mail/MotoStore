@@ -3,6 +3,7 @@ from aiogram import F, types, Router
 from aiogram.fsm.context import FSMContext
 
 from config import ADMIN_ID
+from keyboards.admin_reply_keyboards import admin_change_contact_menu
 from storage import AdminToolsModule
 from keyboards import admin_main_menu, admin_change_products_menu, admin_change_promo_menu, \
     admin_change_category_products
@@ -46,10 +47,10 @@ async def change_our_promo_menu(message: types.Message, state: FSMContext) -> No
                 F.from_user.id.in_(ADMIN_ID))
 async def change_contacts_menu(message: types.Message, state: FSMContext) -> None:
     await state.set_state(AdminToolsModule.change_contact_menu)
-    #  keyboard = admin_change_place_menu
+    keyboard = admin_change_contact_menu
     await message.answer(
         text="Вы перешли в меню изменения контактной информации. Выберите действие 👇:",
-        #  reply_markup=keyboard
+        reply_markup=keyboard
     )
 
 

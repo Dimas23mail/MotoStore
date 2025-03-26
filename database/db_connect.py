@@ -135,6 +135,19 @@ class RolizMotoDB:
             await self.db.execute(create_table_promotion_db)
             await self.db.commit()
 
+        async with self.lock:
+            create_table_contacts_db = '''
+                CREATE TABLE IF NOT EXIST contacts_db (
+                contact_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                title TEXT,
+                city TEXT,
+                address TEXT,
+                phone TEXT
+                )
+            '''
+            await self.db.execute(create_table_contacts_db)
+            await self.db.commit()
+
     async def save_category(self, category: str = None) -> bool:
         if category is None:
             return False
