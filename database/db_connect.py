@@ -37,8 +37,12 @@ class RolizMotoDB:
                 CREATE TABLE IF NOT EXISTS products_db (
                 product_id INTEGER PRIMARY KEY AUTOINCREMENT,
                 category_id INTEGER, 
-                title TEXT, 
+                title TEXT,
+                brand TEXT,
+                engine TEXT,
+                year_of_release INTEGER
                 description TEXT,
+                spare_part_attribute INTEGER,
                 price REAL, 
                 condition TEXT,
                 image_url TEXT,

@@ -3,6 +3,7 @@ from aiogram.filters.callback_data import CallbackData
 
 class StorageForDeletingCategory(CallbackData, prefix="cb"):
     category_id: int
+    reaction: str
 
 
 class StorageForChangePlaceData(CallbackData, prefix="cb"):

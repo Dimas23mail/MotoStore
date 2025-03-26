@@ -19,6 +19,8 @@ router = Router(name=__name__)
 @router.message(F.text.casefold() == "завершить")
 async def cancel_base_handler(message: types.Message, state: FSMContext):
 
+    admin_main_menu_states = (AdminToolsModule.main_menu_admin, )
+
     changing_category_states = (AdminToolsModule.adding_category, AdminToolsModule.deleting_category)
 
     changing_category_menu_states = (AdminToolsModule.change_category_menu, )
@@ -38,6 +40,10 @@ async def cancel_base_handler(message: types.Message, state: FSMContext):
         keyboard = admin_main_menu
         await state.set_state(AdminToolsModule.main_menu_admin)
         text = "Вы вышли в главное меню администратора. Выберите пункт меню 👇:"
+    elif current_state in admin_main_menu_states:
+        keyboard = start_admin_reply_keyboard
+        await state.set_state(AdminToolsModule.main_state_admin)
+        text = "Вы вышли в главное меню. Выберите пункт меню 👇:"
 
     await message.answer(text=text,
                          reply_markup=keyboard)

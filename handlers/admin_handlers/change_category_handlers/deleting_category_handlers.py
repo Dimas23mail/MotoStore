@@ -12,12 +12,12 @@ from utils import StorageForDeletingCategory
 router = Router()
 
 
-@router.callback_query(StorageForDeletingCategory.filter(F.reaction == "delete place"))
+@router.callback_query(StorageForDeletingCategory.filter(F.reaction == "delete category"))
 async def deleting_product_category_reaction(callback: CallbackQuery, callback_data: StorageForDeletingCategory,
                                              state: FSMContext):
     await callback.answer(text=f"Удаляем категорию",
                           show_alert=False)
-    await callback.message.edit_caption(caption="Категория удалена...", reply_markup=None)
+    await callback.message.edit_text(text="Категория удалена...", reply_markup=None)
     print(f"Перехватили удаление категории...")
     category_id = callback_data.category_id
 
