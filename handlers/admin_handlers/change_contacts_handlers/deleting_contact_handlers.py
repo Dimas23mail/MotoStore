@@ -1,5 +1,4 @@
-from aiogram import F, types, Router
-from aiogram.fsm.context import FSMContext
+from aiogram import F, Router
 from aiogram.types import CallbackQuery
 
 from keyboards.reply_keyboard import get_keyboard
@@ -10,8 +9,7 @@ router = Router()
 
 
 @router.callback_query(StorageForDeletingContacts.filter(F.reaction == "delete contact"))
-async def deleting_photo_place_reaction(callback: CallbackQuery, callback_data: StorageForDeletingContacts,
-                                        state: FSMContext):
+async def deleting_photo_place_reaction(callback: CallbackQuery, callback_data: StorageForDeletingContacts):
     await callback.answer(text=f"Удаляем контакт.",
                           show_alert=False)
     await callback.message.edit_text(text="Контакт удален...", reply_markup=None)
