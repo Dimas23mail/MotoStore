@@ -40,7 +40,8 @@ class RolizMotoDB:
                 title TEXT,
                 brand TEXT,
                 engine TEXT,
-                year_of_release INTEGER
+                year_of_release INTEGER,
+                type_of_spare_part TEXT,
                 description TEXT,
                 spare_part_attribute INTEGER,
                 price REAL, 
@@ -148,6 +149,28 @@ class RolizMotoDB:
             await self.db.execute(create_table_contacts_db)
             await self.db.commit()
 
+    async def delete_contact(self, contact_id: int = None) -> bool:
+        if contact_id is None:
+            return False
+        else:
+            async with self.lock:
+                delete_contact = '''
+                    DELETE FROM contacts_db WHERE contact_id = (?)
+                '''
+                await self.db.execute(delete_contact, (contact_id,))
+                await self.db.commit()
+        return True
+
+    async def get_all_contacts(self) -> tuple:
+        async with self.lock:
+            get_all_contacts = '''
+                SELECT * FROM contacts_db
+            '''
+            cursor = await self.db.execute(get_all_contacts)
+            result_list = await cursor.fetchall()
+            await cursor.close()
+        return result_list.copy()
+
     async def save_category(self, category: str = None) -> bool:
         if category is None:
             return False
@@ -178,7 +201,7 @@ class RolizMotoDB:
             cursor = await self.db.execute(get_categories)
             result_list = await cursor.fetchall()
             await cursor.close()
-        return result_list
+        return result_list.copy()
 
     async def deleting_category(self, category_id: int):
         delete_category = '''

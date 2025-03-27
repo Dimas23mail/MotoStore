@@ -24,12 +24,13 @@ async def cancel_base_handler(message: types.Message, state: FSMContext):
 
     changing_category_states = (AdminToolsModule.adding_category, AdminToolsModule.deleting_category)
 
-    changing_category_menu_states = (AdminToolsModule.change_category_menu, AdminToolsModule.change_contact_menu)
+    changing_category_menu_states = (AdminToolsModule.change_category_menu, )
 
-    #  changing_contacts_menu = (AdminToolsModule.change_contact_menu, )
+    changing_contacts_menu = (AdminToolsModule.change_contact_menu, )
 
-    adding_contacts_states = (AdminToolsModule.adding_contact_title, AdminToolsModule.adding_contact_city,
-                              AdminToolsModule.adding_contact_address, AdminToolsModule.adding_contact_phone)
+    any_contacts_states = (AdminToolsModule.adding_contact_title, AdminToolsModule.adding_contact_city,
+                           AdminToolsModule.adding_contact_address, AdminToolsModule.adding_contact_phone,
+                           AdminToolsModule.delete_contact_main)
 
     print("cancel button")
     current_state = await state.get_state()
@@ -46,10 +47,14 @@ async def cancel_base_handler(message: types.Message, state: FSMContext):
         keyboard = admin_change_products_menu
         await state.set_state(AdminToolsModule.change_products_menu)
         text = "Вы вышли в главное меню изменения товаров. Выберите пункт меню 👇:"
-    elif current_state in adding_contacts_states:
+    elif current_state in any_contacts_states:
         keyboard = admin_change_contact_menu
         await state.set_state(AdminToolsModule.change_contact_menu)
         text = "Вы вышли в меню изменения контактных данных. Выберите пункт меню 👇:"
+    elif current_state in changing_contacts_menu:
+        keyboard = admin_main_menu
+        await state.set_state(AdminToolsModule.main_menu_admin)
+        text = "Вы вышли в главное меню изменения контактных данных. Выберите пункт меню 👇:"
     elif current_state in admin_main_menu_states:
         keyboard = start_admin_reply_keyboard
         await state.set_state(AdminToolsModule.main_state_admin)

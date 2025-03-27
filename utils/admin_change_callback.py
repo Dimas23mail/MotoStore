@@ -6,6 +6,11 @@ class StorageForDeletingCategory(CallbackData, prefix="cb"):
     reaction: str
 
 
+class StorageForDeletingContacts(CallbackData, prefix="cb"):
+    contact_id: int
+    reaction: str
+
+
 class StorageForChangePlaceData(CallbackData, prefix="cb"):
     place_id: int
     user_id: int
