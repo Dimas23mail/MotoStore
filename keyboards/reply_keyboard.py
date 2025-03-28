@@ -24,7 +24,6 @@ def get_keyboard(
     :return: keyboard
     """
     keyboard = ReplyKeyboardBuilder()
-
     for index, text in enumerate(buttons, start=0):
 
         if not (request_contact is None) and request_contact == index:

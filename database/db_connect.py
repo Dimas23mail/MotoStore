@@ -41,18 +41,26 @@ class RolizMotoDB:
                 title TEXT,
                 brand TEXT,
                 engine TEXT,
-                year_of_release INTEGER,
-                type_of_spare_part TEXT,
+                type_of_spare_part INTEGER,
                 description TEXT,
                 spare_part_attribute INTEGER,
                 price REAL, 
-                condition TEXT,
                 image_url TEXT,
                 created_at TEXT,
                 FOREIGN KEY (category_id) REFERENCES categories_db (category_id)
                 )                 
                 '''
             await self.db.execute(create_table_products_db)
+            await self.db.commit()
+
+        async with self.lock:
+            create_table_spare_types_db = '''
+                            CREATE TABLE IF NOT EXISTS spare_types_db (
+                            spare_types_id INTEGER PRIMARY KEY AUTOINCREMENT, 
+                            spare_types_name TEXT 
+                            )                 
+                            '''
+            await self.db.execute(create_table_spare_types_db)
             await self.db.commit()
 
         async with self.lock:

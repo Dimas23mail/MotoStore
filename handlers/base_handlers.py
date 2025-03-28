@@ -31,7 +31,8 @@ async def cancel_base_handler(message: types.Message, state: FSMContext):
     any_contacts_states = (AdminToolsModule.adding_contact_title, AdminToolsModule.adding_contact_city,
                            AdminToolsModule.adding_contact_address, AdminToolsModule.adding_contact_phone,
                            AdminToolsModule.delete_contact_main, AdminToolsModule.change_contact_main,
-                           AdminToolsModule.change_contact_title)
+                           AdminToolsModule.change_contact_title, AdminToolsModule.change_contact_city,
+                           AdminToolsModule.change_contact_address, AdminToolsModule.change_contact_phone)
 
     print("cancel button")
     current_state = await state.get_state()
