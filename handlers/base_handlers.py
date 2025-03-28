@@ -20,13 +20,15 @@ router = Router(name=__name__)
 @router.message(F.text.casefold() == "завершить")
 async def cancel_base_handler(message: types.Message, state: FSMContext):
 
-    admin_main_menu_states = (AdminToolsModule.main_menu_admin, )
+    admin_zero_level_menu_states = (AdminToolsModule.main_menu_admin,)
 
     changing_category_states = (AdminToolsModule.adding_category, AdminToolsModule.deleting_category)
 
-    changing_category_menu_states = (AdminToolsModule.change_category_menu, )
+    changing_spare_types_states = (AdminToolsModule.adding_spare_types, AdminToolsModule.deleting_spare_types)
 
-    changing_contacts_menu = (AdminToolsModule.change_contact_menu, )
+    changing_category_menu_states = (AdminToolsModule.change_category_menu, AdminToolsModule.change_spare_types_menu)
+
+    admin_first_menu_states = (AdminToolsModule.change_contact_menu, AdminToolsModule.change_products_menu)
 
     any_contacts_states = (AdminToolsModule.adding_contact_title, AdminToolsModule.adding_contact_city,
                            AdminToolsModule.adding_contact_address, AdminToolsModule.adding_contact_phone,
@@ -44,23 +46,26 @@ async def cancel_base_handler(message: types.Message, state: FSMContext):
     if current_state in changing_category_states:
         keyboard = admin_change_category_products
         await state.set_state(AdminToolsModule.change_category_menu)
-        text = "Вы вышли в меню изменения категории товаров. Выберите пункт меню 👇:"
+        text = "Вы вышли в меню изменения категории товаров.\nВыберите пункт меню 👇:"
+    elif current_state in changing_spare_types_states:
+        await state.set_state(AdminToolsModule.change_category_menu)
+        text = "Вы вышли в меню изменения видов запчастей.\nВыберите пункт меню 👇:"
     elif current_state in changing_category_menu_states:
         keyboard = admin_change_products_menu
         await state.set_state(AdminToolsModule.change_products_menu)
-        text = "Вы вышли в главное меню изменения товаров. Выберите пункт меню 👇:"
+        text = "Вы вышли в главное меню изменения товаров.\nВыберите пункт меню 👇:"
     elif current_state in any_contacts_states:
         keyboard = admin_change_contact_menu
         await state.set_state(AdminToolsModule.change_contact_menu)
-        text = "Вы вышли в меню изменения контактных данных. Выберите пункт меню 👇:"
-    elif current_state in changing_contacts_menu:
+        text = "Вы вышли в меню изменения контактных данных.\nВыберите пункт меню 👇:"
+    elif current_state in admin_first_menu_states:
         keyboard = admin_main_menu
         await state.set_state(AdminToolsModule.main_menu_admin)
-        text = "Вы вышли в главное меню изменения контактных данных. Выберите пункт меню 👇:"
-    elif current_state in admin_main_menu_states:
+        text = "Вы вышли в главное меню изменения контактных данных.\nВыберите пункт меню 👇:"
+    elif current_state in admin_zero_level_menu_states:
         keyboard = start_admin_reply_keyboard
         await state.set_state(AdminToolsModule.main_state_admin)
-        text = "Вы вышли в главное меню. Выберите пункт меню 👇:"
+        text = "Вы вышли в главное меню.\nВыберите пункт меню 👇:"
 
     await message.answer(text=text,
                          reply_markup=keyboard)

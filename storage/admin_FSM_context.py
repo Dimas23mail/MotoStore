@@ -8,6 +8,14 @@ class AdminToolsModule(StatesGroup):
     change_products_menu = State()
     adding_products = State()
 
+    change_category_menu = State()
+    adding_category = State()
+    deleting_category = State()
+
+    change_spare_types_menu = State()
+    adding_spare_types = State()
+    deleting_spare_types = State()
+
     change_promo_menu = State()
 
     change_contact_menu = State()
@@ -24,10 +32,6 @@ class AdminToolsModule(StatesGroup):
     adding_contact_phone = State()
 
     delete_contact_main = State()
-
-    change_category_menu = State()
-    adding_category = State()
-    deleting_category = State()
 
     change_place_menu = State()
     start_change_place = State()

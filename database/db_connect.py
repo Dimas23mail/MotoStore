@@ -1,6 +1,5 @@
 import aiosqlite
 import asyncio
-import logging
 
 
 class RolizMotoDB:
@@ -55,11 +54,11 @@ class RolizMotoDB:
 
         async with self.lock:
             create_table_spare_types_db = '''
-                            CREATE TABLE IF NOT EXISTS spare_types_db (
-                            spare_types_id INTEGER PRIMARY KEY AUTOINCREMENT, 
-                            spare_types_name TEXT 
-                            )                 
-                            '''
+                CREATE TABLE IF NOT EXISTS spare_types_db (
+                spare_types_id INTEGER PRIMARY KEY AUTOINCREMENT, 
+                spare_types_name TEXT 
+                )                 
+                '''
             await self.db.execute(create_table_spare_types_db)
             await self.db.commit()
 
@@ -262,3 +261,31 @@ class RolizMotoDB:
         '''
         await self.db.execute(delete_category, (category_id, ))
         await self.db.commit()
+
+    async def get_spare_types(self) -> list:
+        get_spare_types = '''
+            SELECT * FROM spare_types_db
+        '''
+        cursor = await self.db.execute(get_spare_types)
+        result_list = await cursor.fetchall()
+        await cursor.close()
+
+        return result_list.copy()
+
+    async def deleting_spare_types(self, category_id: int):
+        delete_spare_types = '''
+            DELETE FROM spare_types_db WHERE category_id = (?)
+        '''
+        await self.db.execute(delete_spare_types, (category_id, ))
+        await self.db.commit()
+
+    async def save_spare_types(self, spare_types: str = None) -> bool:
+        if spare_types is None:
+            return False
+        async with self.lock:
+            save_spare_types = '''
+                INSERT INTO spare_types_db (spare_types_name) VALUES (?)
+            '''
+            await self.db.execute(save_spare_types, (spare_types, ))
+            await self.db.commit()
+        return True
