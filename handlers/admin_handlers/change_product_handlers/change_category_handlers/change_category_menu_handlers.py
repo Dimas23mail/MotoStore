@@ -1,6 +1,6 @@
 from aiogram import F, types, Router
 from aiogram.fsm.context import FSMContext
-from keyboards import cancel_keyboard, delete_record_ikb
+from keyboards import cancel_keyboard, action_with_record_ikb
 from keyboards.admin_reply_keyboards import admin_finish_action, admin_change_category_products
 
 from storage import AdminToolsModule
@@ -24,7 +24,7 @@ async def deleting_product_category_menu_handler(message: types.Message, state: 
         async with moto_db:
             categories = await moto_db.get_categories()
         for element in categories:
-            keyboard = delete_record_ikb(record_id=element[0], reaction="delete category")
+            keyboard = action_with_record_ikb(record_id=element[0], reaction="delete category")
             await message.answer(text=element[-1], reply_markup=keyboard)
         text = "Выберите категорию товаров для удаления ☝️:"
         keyboard = admin_finish_action
@@ -37,5 +37,5 @@ async def deleting_product_category_menu_handler(message: types.Message, state: 
 
 
 @router.message(AdminToolsModule.change_category_menu)
-async def wrong_change_product_category_menu_handler(message: types.Message, state: FSMContext):
+async def wrong_change_product_category_menu_handler(message: types.Message):
     await message.answer(text="Error! Category product menu handler!")

@@ -1,10 +1,10 @@
 from aiogram.types import InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-from utils import StorageForChangePlaceData, StorageForChangeImageData, StorageForDeletingCategory
+from utils import (StorageForChangePlaceData, StorageForChangeImageData, StorageForDeletingCategory,
+                   StorageForChangingContacts)
 
 
-def delete_record_ikb(record_id: int, reaction: str) -> InlineKeyboardMarkup:
-    button_text = "Удалить"
+def action_with_record_ikb(record_id: int, reaction: str, button_text: str = "Удалить") -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
 
     cb_data = StorageForDeletingCategory(category_id=record_id, reaction=reaction)

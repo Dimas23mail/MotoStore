@@ -3,8 +3,8 @@ from aiogram.fsm.context import FSMContext
 
 from keyboards.reply_keyboard import get_keyboard
 from storage import AdminToolsModule
-from keyboards import cancel_keyboard, admin_change_products_menu, build_change_record_kb, build_delete_photo_record_kb, \
-    admin_change_category_products
+from keyboards import (cancel_keyboard, admin_change_products_menu, build_change_record_kb,
+                       build_delete_photo_record_kb, admin_change_category_products)
 from config import moto_db, ADMIN_ID
 from utils import make_string_for_output
 

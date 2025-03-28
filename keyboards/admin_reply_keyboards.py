@@ -55,16 +55,15 @@ admin_change_contact_menu = get_keyboard(
     sizes=(1,)
 )
 
-admin_change_place_info = get_keyboard(
-    "Название 📄",
-    "Описание 📖",
-    "Город 🌆",
-    "Адрес 🏣",
-    "Телефон 📞",
-    "Фото 📸",
+admin_change_contact = get_keyboard(
+    "Название 🪧",
+    "Город 🏙",
+    "Адрес 🏘",
+    "Телефон ☎️",
     "Отмена 🔙",
-    placeholder="Выберите пункт меню...",
-    sizes=(2,)
+    placeholder="Выберите действие...",
+    sizes=(2, 2, 1)
+
 )
 
 admin_finish_action = get_keyboard(

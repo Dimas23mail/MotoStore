@@ -9,7 +9,7 @@ router = Router()
 
 
 @router.callback_query(StorageForDeletingContacts.filter(F.reaction == "delete contact"))
-async def deleting_photo_place_reaction(callback: CallbackQuery, callback_data: StorageForDeletingContacts):
+async def deleting_contact_reaction(callback: CallbackQuery, callback_data: StorageForDeletingContacts):
     await callback.answer(text=f"Удаляем контакт.",
                           show_alert=False)
     await callback.message.edit_text(text="Контакт удален...", reply_markup=None)

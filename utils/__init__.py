@@ -3,4 +3,4 @@ from .message_utils import make_output_album
 from .admin_change_callback import StorageForChangePlaceData
 from .admin_change_callback import StorageForChangeImageData
 
-from .admin_change_callback import StorageForDeletingCategory
+from .admin_change_callback import StorageForDeletingCategory, StorageForChangingContacts

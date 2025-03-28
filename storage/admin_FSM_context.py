@@ -13,6 +13,10 @@ class AdminToolsModule(StatesGroup):
     change_contact_menu = State()
 
     change_contact_main = State()
+    change_contact_title = State()
+    change_contact_city = State()
+    change_contact_address = State()
+    change_contact_phone = State()
 
     adding_contact_title = State()
     adding_contact_city = State()

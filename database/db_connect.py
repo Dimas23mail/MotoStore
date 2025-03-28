@@ -1,5 +1,6 @@
 import aiosqlite
 import asyncio
+import logging
 
 
 class RolizMotoDB:
@@ -161,7 +162,19 @@ class RolizMotoDB:
                 await self.db.commit()
         return True
 
-    async def get_all_contacts(self) -> tuple:
+    async def get_one_contact(self, contact_id: int = None) -> tuple | None:
+        if contact_id is None:
+            return None
+        else:
+            get_one_contact = '''
+                SELECT * FROM contacts_db WHERE contact_id = (?)
+            '''
+            cursor = await self.db.execute(get_one_contact, (contact_id, ))
+            result_tuple = await cursor.fetchone()
+            await cursor.close()
+        return result_tuple
+
+    async def get_all_contacts(self) -> list:
         async with self.lock:
             get_all_contacts = '''
                 SELECT * FROM contacts_db
@@ -170,6 +183,38 @@ class RolizMotoDB:
             result_list = await cursor.fetchall()
             await cursor.close()
         return result_list.copy()
+
+    async def update_contact(self, contact_id: int = None, contact_title: str = None, contact_city: str = None,
+                             contact_address: str = None, contact_phone: str = None) -> bool:
+        if contact_id is None:
+            return False
+        print(f"contact_title = {contact_title}\ncontact_city = {contact_city}")
+        async with self.lock:
+            if contact_title:
+                update_contact = '''
+                    UPDATE contacts_db SET title = (?) WHERE contact_id = (?)
+                '''
+                await self.db.execute(update_contact, (contact_title, contact_id))
+                await self.db.commit()
+            elif contact_city:
+                update_contact = '''
+                    UPDATE contacts_db SET city = (?) WHERE contact_id = (?)
+                '''
+                await self.db.execute(update_contact, (contact_city, contact_id))
+                await self.db.commit()
+            elif contact_address:
+                update_contact = '''
+                    UPDATE contacts_db SET address = (?) WHERE contact_id = (?)
+                '''
+                await self.db.execute(update_contact, (contact_address, contact_id))
+                await self.db.commit()
+            elif contact_phone:
+                update_contact = '''
+                    UPDATE contacts_db SET phone = (?) WHERE contact_id = (?)
+                '''
+                await self.db.execute(update_contact, (contact_phone, contact_id))
+                await self.db.commit()
+            return True
 
     async def save_category(self, category: str = None) -> bool:
         if category is None:

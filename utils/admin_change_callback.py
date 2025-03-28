@@ -11,6 +11,11 @@ class StorageForDeletingContacts(CallbackData, prefix="cb"):
     reaction: str
 
 
+class StorageForChangingContacts(CallbackData, prefix="cb"):
+    contact_id: int
+    reaction: str
+
+
 class StorageForChangePlaceData(CallbackData, prefix="cb"):
     place_id: int
     user_id: int
