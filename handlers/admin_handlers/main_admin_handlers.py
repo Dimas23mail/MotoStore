@@ -5,8 +5,7 @@ from aiogram.fsm.context import FSMContext
 from config import ADMIN_ID
 from keyboards.admin_reply_keyboards import admin_change_contact_menu
 from storage import AdminToolsModule
-from keyboards import admin_main_menu, admin_change_products_menu, admin_change_promo_menu, \
-    admin_change_category_products
+from keyboards import admin_main_menu, admin_change_products_menu, admin_change_promo_menu
 
 router = Router()
 

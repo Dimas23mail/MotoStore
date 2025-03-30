@@ -39,7 +39,7 @@ async def cancel_base_handler(message: types.Message, state: FSMContext):
     print("cancel button")
     current_state = await state.get_state()
     print(f"current state = {current_state}")
-
+    await state.set_state(AdminToolsModule.main_state_admin)
     keyboard = start_admin_reply_keyboard
     text = "Вы вышли в главное меню. Выберите пункт меню 👇:"
 
@@ -84,6 +84,7 @@ async def command_start(message: types.Message, state: FSMContext):
     else:
         keyboard = start_client_reply_keyboard
         await state.set_state(ClientToolsModule.main_state_client)
+
     await message.answer(text="👋 Привет! Я — ваш виртуальный помощник по продаже мотоциклов, мопедов и запчастей. "
                               "Здесь вы сможете найти идеальный транспорт для себя, а также все необходимые компоненты "
                               "для его обслуживания.\n🚴‍♂️ Что я могу вам предложить?\n\n•	📦 Широкий выбор мотоциклов "
@@ -96,11 +97,12 @@ async def command_start(message: types.Message, state: FSMContext):
 
 
 @router.message(default_state)
-async def default_empty_message(message: types.Message):
+async def default_empty_message(message: types.Message, state: FSMContext):
+    await state.set_state(AdminToolsModule.main_state_admin)
     if message.from_user.id in ADMIN_ID:
         keyboard = start_admin_reply_keyboard
     else:
         keyboard = start_client_reply_keyboard
-    await message.answer(text="Неизвестная команда...",
+    await message.answer(text="Неизвестная команда. Попробуйте сначала использовать команду /start.",
                          reply_markup=keyboard
                          )
