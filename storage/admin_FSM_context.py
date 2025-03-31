@@ -33,24 +33,5 @@ class AdminToolsModule(StatesGroup):
 
     delete_contact_main = State()
 
-    change_place_menu = State()
-    start_change_place = State()
-    change_place_name = State()
-    change_place_description = State()
-    change_place_city = State()
-    change_place_address = State()
-    change_place_telephone = State()
-    change_place_photo = State()
-
-    adding_place = State()
-    input_place_name = State()
-    input_place_description = State()
-    input_place_city = State()
-    input_place_address = State()
-    input_place_telephone = State()
-    input_place_pictures = State()
-    result_new_place_information = State()
-    send_again = State()
-
-    deleting_place = State()
-
+    contact_info = State()
+    promo_info = State()

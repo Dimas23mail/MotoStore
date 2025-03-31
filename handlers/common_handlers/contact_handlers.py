@@ -13,7 +13,11 @@ router = Router()
 @router.message(AdminToolsModule.main_state_admin, F.text.casefold() == "контакты ☎️ 📱")
 @router.message(ClientToolsModule.main_state_client, F.text.casefold() == "контакты ☎️ 📱")
 async def check_client_command(message: types.Message, state: FSMContext) -> None:
-    await state.set_state(ClientToolsModule.contact_info)
+    current_state = await state.get_state()
+    if current_state is AdminToolsModule.main_state_admin:
+        await state.set_state(AdminToolsModule.contact_info)
+    elif current_state is ClientToolsModule.main_state_client:
+        await state.set_state(ClientToolsModule.contact_info)
     keyboard = get_keyboard("Завершить",
                             placeholder="Выберите действие",
                             sizes=(1,))

@@ -1,6 +1,7 @@
 from aiogram.utils import markdown
 
 
+#  String for contact list
 def make_string_for_output(source: tuple) -> str:
     result = (f"{markdown.hbold(source[0])}\n\nг. {markdown.hbold(source[1])}\n\n{markdown.hbold('Адрес: ')}"
               f"{markdown.hcode(source[2])}\n{markdown.hbold('Телефон: ')}"
@@ -20,3 +21,17 @@ def deleting_photo_from_list(photo_list: list, photo_id: int) -> str:
         result += i
         result += " "
     return result.strip()
+
+
+#  String for promo list (title, description, start_date, end_date)
+def make_promo_string(source: tuple) -> str:
+    result = (f"{markdown.hbold(source[0])}\n{source[1]}\n\n"
+              f"Начало акции: {markdown.code(make_date_time_string(source[2]))},\n"
+              f"Окончание акции: {markdown.code(make_date_time_string(source[3]))}!")
+
+    return result
+
+
+def make_date_time_string(source_string: str) -> str:
+    result = source_string[:source_string.find(" ")] + " в " + source_string[source_string.find(" ")+1:]
+    return result

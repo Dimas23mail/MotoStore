@@ -1,3 +1,5 @@
+import datetime, pytz
+
 from aiogram.filters import CommandStart, Command
 from aiogram import Router, types, F
 from aiogram.enums import ParseMode
@@ -36,6 +38,8 @@ async def cancel_base_handler(message: types.Message, state: FSMContext):
                            AdminToolsModule.change_contact_title, AdminToolsModule.change_contact_city,
                            AdminToolsModule.change_contact_address, AdminToolsModule.change_contact_phone)
 
+    client_zero_states = (ClientToolsModule.main_state_client, )
+
     print("cancel button")
     current_state = await state.get_state()
     print(f"current state = {current_state}")
@@ -67,6 +71,12 @@ async def cancel_base_handler(message: types.Message, state: FSMContext):
         await state.set_state(AdminToolsModule.main_state_admin)
         text = "Вы вышли в главное меню.\nВыберите пункт меню 👇:"
 
+    #  For client states
+    elif current_state in client_zero_states:
+        keyboard = start_client_reply_keyboard
+        await state.set_state(ClientToolsModule.main_state_client)
+        text = "Вы вышли в главное меню.\nВыберите пункт меню 👇:"
+
     await message.answer(text=text,
                          reply_markup=keyboard)
 
@@ -84,6 +94,22 @@ async def command_start(message: types.Message, state: FSMContext):
     else:
         keyboard = start_client_reply_keyboard
         await state.set_state(ClientToolsModule.main_state_client)
+
+        now_date = datetime.datetime.now(pytz.utc).strftime(format="%d-%m-%Y %H:%M:%S")
+
+        user_tg_id = message.from_user.id
+        try:
+            async with moto_db:
+                user_db_id = await moto_db.test_user(user_tg_id=user_tg_id)
+                if user_db_id:
+                    if not await moto_db.change_user_visit_field(user_id=user_db_id, date_of_last_visit=now_date):
+                        print(f"Не получилось внести сведения о посещении для пользователя {user_db_id} в БД")
+
+                else:
+                    await moto_db.save_new_user(created_at=now_date, user_tg_id=user_tg_id)
+
+        except Exception as ex:
+            print(f"Ошибка при занесении посещения в БД: {ex}")
 
     await message.answer(text="👋 Привет! Я — ваш виртуальный помощник по продаже мотоциклов, мопедов и запчастей. "
                               "Здесь вы сможете найти идеальный транспорт для себя, а также все необходимые компоненты "

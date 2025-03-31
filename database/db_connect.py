@@ -24,9 +24,13 @@ class RolizMotoDB:
             create_table_users_db = '''
                 CREATE TABLE IF NOT EXISTS users_db (
                 user_id INTEGER PRIMARY KEY AUTOINCREMENT, 
+                created_at TEXT,
+                date_of_last_visit TEXT,
+                user_tg_id INTEGER,
                 user_name TEXT, 
-                phone TEXT, 
-                created_at TEXT
+                phone TEXT,
+                email TEXT, 
+                promo_id INTEGER
                 )                 
                 '''
             await self.db.execute(create_table_users_db)
@@ -135,10 +139,12 @@ class RolizMotoDB:
             create_table_promotion_db = '''
                 CREATE TABLE IF NOT EXISTS promotion_db (
                 promotion_id INTEGER PRIMARY KEY AUTOINCREMENT, 
+                promo_code_id INTEGER,
                 title TEXT, 
                 description TEXT,
                 start_date TEXT,
-                end_date TEXT
+                end_date TEXT,
+                FOREIGN KEY (promo_code_id) REFERENCES promo_db (promo_code_id)
                 )                 
                 '''
             await self.db.execute(create_table_promotion_db)
@@ -156,6 +162,41 @@ class RolizMotoDB:
             '''
             await self.db.execute(create_table_contacts_db)
             await self.db.commit()
+
+    async def save_new_user(self, created_at: str = None, user_tg_id: int = None) -> bool:
+        if created_at is None or user_tg_id is None:
+            return False
+        async with self.lock:
+            save_user = '''
+                INSERT INTO users_db (created_at, date_of_last_visit, user_tg_id) VALUES (?, ?, ?)
+            '''
+            await self.db.execute(save_user, (created_at, created_at, user_tg_id, ))
+            await self.db.commit()
+        return True
+
+    async def change_user_visit_field(self, user_id: int = None, date_of_last_visit: str = None) -> bool:
+        if user_id is None or date_of_last_visit is None:
+            return False
+        async with self.lock:
+            change_visit_field = '''
+                UPDATE users_db SET date_of_last_visit = (?) WHERE user_id = (?)
+            '''
+            await self.db.execute(change_visit_field, (date_of_last_visit, user_id))
+            await self.db.commit()
+        return True
+
+    async def test_user(self, user_tg_id: int = None) -> bool | int:
+        if user_tg_id is None:
+            return False
+        else:
+            async with self.lock:
+                get_one_user = '''
+                    SELECT user_id FROM users_db WHERE user_tg_id = (?)        
+                '''
+                cursor = await self.db.execute(get_one_user, (user_tg_id,))
+                result = await cursor.fetchone()
+                await cursor.close()
+        return result[0] if result else False
 
     async def delete_contact(self, contact_id: int = None) -> bool:
         if contact_id is None:
@@ -289,3 +330,14 @@ class RolizMotoDB:
             await self.db.execute(save_spare_types, (spare_types, ))
             await self.db.commit()
         return True
+
+    async def get_all_promo_by_date(self, now_date: str = "") -> list | None:
+        async with self.lock:
+            get_all_promo = '''
+                SELECT title, description, start_date, end_date FROM promotion_db 
+                WHERE (start_date < ? and end_date > ?)
+            '''
+            cursor = await self.db.execute(get_all_promo, (now_date, now_date, ))
+            result_list = await cursor.fetchall()
+            await cursor.close()
+        return result_list.copy()
