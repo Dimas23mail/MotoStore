@@ -1,6 +1,9 @@
+import asyncio
+
 from aiogram import F, types, Router
 
 from aiogram.fsm.context import FSMContext
+from aiogram.utils.chat_action import ChatActionSender
 
 from keyboards.reply_keyboard import get_keyboard
 from storage import AdminToolsModule, ClientToolsModule
@@ -13,6 +16,9 @@ router = Router()
 @router.message(AdminToolsModule.main_state_admin, F.text.casefold() == "контакты ☎️ 📱")
 @router.message(ClientToolsModule.main_state_client, F.text.casefold() == "контакты ☎️ 📱")
 async def check_client_command(message: types.Message, state: FSMContext) -> None:
+    async with ChatActionSender.typing(bot=message.bot, chat_id=message.chat.id):
+        await asyncio.sleep(1)
+
     current_state = await state.get_state()
     if current_state is AdminToolsModule.main_state_admin:
         await state.set_state(AdminToolsModule.contact_info)

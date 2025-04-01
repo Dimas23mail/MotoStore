@@ -1,3 +1,4 @@
+import asyncio
 import datetime, pytz
 
 from aiogram.filters import CommandStart, Command
@@ -5,6 +6,7 @@ from aiogram import Router, types, F
 from aiogram.enums import ParseMode
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state
+from aiogram.utils.chat_action import ChatActionSender
 
 from config import ADMIN_ID, moto_db
 from keyboards import (start_client_reply_keyboard, start_admin_reply_keyboard, admin_main_menu,
@@ -21,6 +23,9 @@ router = Router(name=__name__)
 @router.message(F.text.casefold() == "cancel")
 @router.message(F.text.casefold() == "завершить")
 async def cancel_base_handler(message: types.Message, state: FSMContext):
+
+    async with ChatActionSender.typing(bot=message.bot, chat_id=message.chat.id):
+        await asyncio.sleep(1)
 
     admin_zero_level_menu_states = (AdminToolsModule.main_menu_admin,)
 
@@ -85,6 +90,9 @@ async def cancel_base_handler(message: types.Message, state: FSMContext):
 async def command_start(message: types.Message, state: FSMContext):
     print(f"Подключился пользователь: {message.from_user.full_name}, id: {message.from_user.id}")
     await state.clear()
+
+    async with ChatActionSender.typing(bot=message.bot, chat_id=message.chat.id):
+        await asyncio.sleep(1)
 
     if message.from_user.id in ADMIN_ID:
         keyboard = start_admin_reply_keyboard

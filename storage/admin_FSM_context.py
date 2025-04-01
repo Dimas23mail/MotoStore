@@ -18,6 +18,12 @@ class AdminToolsModule(StatesGroup):
 
     change_promo_menu = State()
 
+    adding_promo = State()
+    adding_promo_description = State()
+
+    deleting_promo = State()
+    testing_promo_code = State()
+
     change_contact_menu = State()
 
     change_contact_main = State()
@@ -34,4 +40,5 @@ class AdminToolsModule(StatesGroup):
     delete_contact_main = State()
 
     contact_info = State()
+
     promo_info = State()

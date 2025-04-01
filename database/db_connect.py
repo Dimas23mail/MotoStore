@@ -110,12 +110,14 @@ class RolizMotoDB:
             create_table_promo_db = '''
                 CREATE TABLE IF NOT EXISTS promo_db (
                 promo_code_id INTEGER PRIMARY KEY AUTOINCREMENT, 
+                title_id INTEGER,
                 code TEXT, 
                 discount REAL,
                 product_id INTEGER,
                 valid_from TEXT,
                 valid_to TEXT,
-                used_by TEXT
+                used_by TEXT,
+                FOREIGN KEY (title_id) REFERENCES promo_title_db (title_id)
                 )                 
                 '''
             await self.db.execute(create_table_promo_db)
@@ -140,14 +142,25 @@ class RolizMotoDB:
                 CREATE TABLE IF NOT EXISTS promotion_db (
                 promotion_id INTEGER PRIMARY KEY AUTOINCREMENT, 
                 promo_code_id INTEGER,
-                title TEXT, 
+                title_id INTEGER, 
                 description TEXT,
                 start_date TEXT,
                 end_date TEXT,
-                FOREIGN KEY (promo_code_id) REFERENCES promo_db (promo_code_id)
+                FOREIGN KEY (promo_code_id) REFERENCES promo_db (promo_code_id),
+                FOREIGN KEY (title_id) REFERENCES promo_title_db (title_id)
                 )                 
                 '''
             await self.db.execute(create_table_promotion_db)
+            await self.db.commit()
+
+        async with self.lock:
+            create_table_promo_title_db = '''
+                CREATE TABLE IF NOT EXISTS promo_title_db (
+                title_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                title_name TEXT
+                )
+            '''
+            await self.db.execute(create_table_promo_title_db)
             await self.db.commit()
 
         async with self.lock:
@@ -341,3 +354,31 @@ class RolizMotoDB:
             result_list = await cursor.fetchall()
             await cursor.close()
         return result_list.copy()
+
+    async def get_all_promo(self) -> list:
+        async with self.lock:
+            get_all_promo = '''
+                SELECT * FROM promo_title_db
+            '''
+            cursor = await self.db.execute(get_all_promo)
+            result_list = await cursor.fetchall()
+            await cursor.close()
+        return result_list.copy()
+
+    async def save_new_promo_title(self, title_name: str = None):
+        if title_name is None:
+            return False
+        async with self.lock:
+            save_new_promo_title = '''
+                INSERT INTO promo_title_db (title_name) VALUES (?)
+            '''
+            await self.db.execute(save_new_promo_title, (title_name,))
+            await self.db.commit()
+
+            get_saved_promo_id = '''
+                SELECT title_id FROM promo_title_db WHERE title_name = (?)
+            '''
+            cursor = await self.db.execute(get_saved_promo_id, (title_name, ))
+            result_list = await cursor.fetchone()
+            await cursor.close()
+        return result_list
