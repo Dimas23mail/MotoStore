@@ -20,6 +20,13 @@ class AdminToolsModule(StatesGroup):
 
     adding_promo = State()
     adding_promo_description = State()
+    adding_promo_discount = State()
+    adding_promo_start_date = State()
+    adding_promo_end_date = State()
+    adding_promo_valid_length = State()
+    adding_promo_category = State()
+    adding_promo_sub_category = State()
+    adding_promo_result = State()
 
     deleting_promo = State()
     testing_promo_code = State()

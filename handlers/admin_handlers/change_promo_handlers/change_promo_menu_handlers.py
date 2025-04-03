@@ -21,16 +21,17 @@ async def adding_promo_menu_handler(message: types.Message, state: FSMContext):
         print(f"Ошибка при чтении из промо-акций: {ex}")
     await state.update_data(promo_list=promo_list)
     if promo_list:
-        buttons = set()
-        for i in promo_list:
-            buttons.add(i[1])
+        buttons = set(i[1] for i in promo_list)
         await state.update_data(buttons_set=buttons)
         buttons = list(buttons)
+        buttons.append("Отмена 🔙")
         text = "Вы перешли в меню добавления промо-акции.\nВыберите название акции или введите новое 👇."
         keyboard = get_list_keyboard(buttons=buttons, placeholder="Выберите или введите название", sizes=(2, ))
     else:
         text = "Названия промо-акций в базе отсутствуют 😕.\nВведите название новой промо-акции."
         keyboard = cancel_keyboard
+    step = [AdminToolsModule.change_promo_menu,]
+    await state.update_data(step=step)
     await message.answer(text=text, reply_markup=keyboard)
 
 

@@ -37,26 +37,6 @@ class RolizMotoDB:
             await self.db.commit()
 
         async with self.lock:
-            create_table_products_db = '''
-                CREATE TABLE IF NOT EXISTS products_db (
-                product_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                category_id INTEGER, 
-                title TEXT,
-                brand TEXT,
-                engine TEXT,
-                type_of_spare_part INTEGER,
-                description TEXT,
-                spare_part_attribute INTEGER,
-                price REAL, 
-                image_url TEXT,
-                created_at TEXT,
-                FOREIGN KEY (category_id) REFERENCES categories_db (category_id)
-                )                 
-                '''
-            await self.db.execute(create_table_products_db)
-            await self.db.commit()
-
-        async with self.lock:
             create_table_spare_types_db = '''
                 CREATE TABLE IF NOT EXISTS spare_types_db (
                 spare_types_id INTEGER PRIMARY KEY AUTOINCREMENT, 
@@ -74,6 +54,41 @@ class RolizMotoDB:
                 )                 
                 '''
             await self.db.execute(create_table_categories_db)
+            await self.db.commit()
+
+        async with self.lock:
+            create_table_sub_categories_db = '''
+                CREATE TABLE IF NOT EXISTS sub_categories_db (
+                sub_category_id INTEGER PRIMARY KEY AUTOINCREMENT, 
+                sub_category_name TEXT,
+                category_id INTEGER,
+                FOREIGN KEY (category_id) REFERENCES categories_db (category_id) 
+                )                 
+                '''
+            await self.db.execute(create_table_sub_categories_db)
+            await self.db.commit()
+
+        async with self.lock:
+            create_table_products_db = '''
+                CREATE TABLE IF NOT EXISTS products_db (
+                product_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                category_id INTEGER,
+                sub_category_id INTEGER, 
+                title TEXT,
+                brand TEXT,
+                engine TEXT,
+                spare_types_id INTEGER,
+                description TEXT,
+                spare_part_attribute INTEGER,
+                price REAL, 
+                image_url TEXT,
+                created_at TEXT,
+                FOREIGN KEY (category_id) REFERENCES categories_db (category_id),
+                FOREIGN KEY (sub_category_id) REFERENCES sub_categories_db (sub_category_id),
+                FOREIGN KEY (spare_types_id) REFERENCES spare_types_db (spare_types_id)
+                )                 
+                '''
+            await self.db.execute(create_table_products_db)
             await self.db.commit()
 
         async with self.lock:
@@ -307,6 +322,20 @@ class RolizMotoDB:
             cursor = await self.db.execute(get_categories)
             result_list = await cursor.fetchall()
             await cursor.close()
+        return result_list.copy()
+
+    async def get_sub_categories(self, category_id: int = 0) -> list:
+        async with self.lock:
+            get_sub_categories = '''
+                SELECT sub_categories_db.sub_category_id, sub_categories_db.sub_category_name 
+                FROM sub_categories_db
+                JOIN categories_db
+                ON sub_categories_db.category_id = (?)
+            '''
+            cursor = await self.db.execute(get_sub_categories, (category_id, ))
+            result_list = await cursor.fetchall()
+            await cursor.close()
+        print(f"result_list = {result_list}")
         return result_list.copy()
 
     async def deleting_category(self, category_id: int):
