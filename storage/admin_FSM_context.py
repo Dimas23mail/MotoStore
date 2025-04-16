@@ -27,6 +27,7 @@ class AdminToolsModule(StatesGroup):
     adding_promo_category = State()
     adding_promo_sub_category = State()
     adding_promo_result = State()
+    adding_promo_product = State()
 
     deleting_promo = State()
     testing_promo_code = State()

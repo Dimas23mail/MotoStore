@@ -26,3 +26,8 @@ class StorageForChangeImageData(CallbackData, prefix="cb"):
     place_id: int
     photo_id: int
     reaction: str
+
+
+class StorageForAddingPromoProducts(CallbackData, prefix="cb"):
+    product_id: int
+    reaction: str

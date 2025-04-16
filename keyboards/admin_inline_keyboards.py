@@ -1,7 +1,7 @@
 from aiogram.types import InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from utils import (StorageForChangePlaceData, StorageForChangeImageData, StorageForDeletingCategory,
-                   StorageForChangingContacts)
+                   StorageForAddingPromoProducts)
 
 
 def action_with_record_ikb(record_id: int, reaction: str, button_text: str = "Удалить") -> InlineKeyboardMarkup:
@@ -40,4 +40,18 @@ def build_delete_photo_record_kb(place_id: int, photo_id: int, reaction: str, te
         callback_data=cb_data.pack()
     )
     builder.adjust(1,)
+    return builder.as_markup()
+
+
+def build_choice_product_for_promo(product_id: int, reaction: str, text: str = "Добавить товар") \
+        -> InlineKeyboardMarkup:
+    add_button_text = text
+    builder = InlineKeyboardBuilder()
+
+    cb_data = StorageForAddingPromoProducts(product_id=product_id, reaction=reaction)
+    builder.button(
+        text=add_button_text,
+        callback_data=cb_data.pack()
+    )
+    builder.adjust(1, )
     return builder.as_markup()

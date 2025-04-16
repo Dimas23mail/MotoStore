@@ -77,9 +77,9 @@ class RolizMotoDB:
                 title TEXT,
                 brand TEXT,
                 engine TEXT,
+                spare_part_attribute INTEGER,
                 spare_types_id INTEGER,
                 description TEXT,
-                spare_part_attribute INTEGER,
                 price REAL, 
                 image_url TEXT,
                 created_at TEXT,
@@ -335,7 +335,32 @@ class RolizMotoDB:
             cursor = await self.db.execute(get_sub_categories, (category_id, ))
             result_list = await cursor.fetchall()
             await cursor.close()
-        print(f"result_list = {result_list}")
+        #  print(f"result_list = {result_list}")
+        return result_list.copy()
+
+    async def get_products_for_promo(self, category_id: int = None, sub_category_id: int = None) -> list | None:
+        if category_id is None or sub_category_id is None:
+            return None
+        async with self.lock:
+            if sub_category_id != 0:
+                get_products = '''
+                    SELECT product_id, title, brand
+                    FROM products_db
+                    WHERE category_id = (?) AND sub_category_id = (?)
+                '''
+                cursor = await self.db.execute(get_products, (category_id, sub_category_id, ))
+
+            else:
+                get_products = '''
+                    SELECT product_id, title, brand
+                    FROM products_db
+                    WHERE category_id = (?)
+                '''
+                cursor = await self.db.execute(get_products, (category_id,))
+        result_list = await cursor.fetchall()
+        await cursor.close()
+        #  print(f"result_list = {result_list}")
+
         return result_list.copy()
 
     async def deleting_category(self, category_id: int):

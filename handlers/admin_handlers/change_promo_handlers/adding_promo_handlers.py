@@ -1,18 +1,13 @@
-from pprint import pprint
-
 from aiogram import F, types, Router
-from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
-from aiogram.fsm.state import State
 from aiogram.utils import markdown
 
-from keyboards import cancel_keyboard, action_with_record_ikb
+from keyboards import build_choice_product_for_promo
 from keyboards.reply_keyboard import get_keyboard, get_list_keyboard
 from storage import AdminToolsModule
 
 from config import moto_db
-from user_filters import telephone_validate, days_validate, date_validate, discount_validate
-from utils import make_string_for_output
+from user_filters import days_validate, date_validate, discount_validate
 
 router = Router()
 
@@ -22,7 +17,10 @@ async def adding_promo_title_handler(message: types.Message, state: FSMContext):
     await state.set_state(AdminToolsModule.adding_promo_description)
     current_data = await state.get_data()
     current_promo_list = current_data["promo_list"]
-    current_buttons_set = current_data["buttons_set"]
+    try:
+        current_buttons_set = current_data["buttons_set"]
+    except KeyError:
+        current_buttons_set = []
     promo_title_index = 0
     step = current_data["step"]
     step.append(AdminToolsModule.adding_promo)
@@ -62,7 +60,10 @@ async def adding_promo_title_handler(message: types.Message, state: FSMContext):
 @router.message(AdminToolsModule.adding_promo)
 async def wrong_adding_promo_title_handler(message: types.Message, state: FSMContext):
     current_data = await state.get_data()
-    current_buttons_set = current_data["buttons_set"]
+    try:
+        current_buttons_set = current_data["buttons_set"]
+    except KeyError:
+        current_buttons_set = []
     current_buttons_set = list(current_buttons_set)
     current_buttons_set.append("Отмена 🔙")
     keyboard = get_list_keyboard(buttons=current_buttons_set, placeholder="Выберите название или введите вручную",
@@ -153,7 +154,7 @@ async def adding_promo_end_date_handler(message: types.Message, state: FSMContex
     current_data = await state.get_data()
     step = current_data["step"]
     step.append(AdminToolsModule.adding_promo_end_date)
-    await state.update_data(promo_end_date=date_finish)
+    await state.update_data(promo_end_date=date_finish, category="category", valid_date_length=None)
     await __get_category_keyboard(state)
     current_data = await state.get_data()
     if current_data["buttons_category_names"]:
@@ -182,8 +183,7 @@ async def valid_length_promo_handler(message: types.Message, state: FSMContext, 
     current_data = await state.get_data()
     step = current_data["step"]
     step.append(AdminToolsModule.adding_promo_valid_length)
-    await state.update_data(valid_date_length=valid_days)
-    await state.update_data(category="category")
+    await state.update_data(promo_end_date=None, valid_date_length=valid_days, category="category")
     await __get_category_keyboard(state)
     current_data = await state.get_data()
     if current_data["buttons_category_names"]:
@@ -227,7 +227,9 @@ async def adding_promo_categories_handler(message: types.Message, state: FSMCont
         await __get_category_keyboard(state, category_id)
         current_data = await state.get_data()
         #  print(f"current data cat id: {current_data}")
-        button_name = set(current_data["buttons_category_names"].copy())
+        button_name = current_data["buttons_category_names"].copy()
+        button_name.append("Отсутствует")
+        button_name = set(button_name)
         if button_name:
             text = f"Вы выбрали категорию: {markdown.hbold(message.text)}.\nВыберите подкатегорию товара."
             keyboard = get_list_keyboard(list(button_name), placeholder="Выберите действие.")
@@ -262,35 +264,39 @@ async def adding_promo_subcategories_handler(message: types.Message, state: FSMC
     current_data = await state.get_data()
     button_name = current_data["buttons_category_names"]
     if message.text in button_name:
-        # --- Setup STATE ОСтановка...
-        await state.set_state(AdminToolsModule.adding_promo_sub_category)
+        await state.set_state(AdminToolsModule.adding_promo_product)
         step = current_data["step"]
         step.append(AdminToolsModule.adding_promo_sub_category)
-        await state.update_data(category="sub_category")
-        category_id = 0
+        await state.update_data(category="products")
+        sub_category_id = 0
         for i in current_data["buttons_category_list"]:
             print(f"i = {i}; i[1] = {i[1]}; text = {message.text}")
             if i[1].casefold() == message.text.casefold():
-                category_id = i[0]
+                sub_category_id = i[0]
                 break
             else:
                 print(f"Can`t find category id!")
-        await state.update_data(category_id=category_id)
-        await __get_category_keyboard(state, category_id)
+        await state.update_data(sub_category_id=sub_category_id)
+        await __get_category_keyboard(state,
+                                      category_id=current_data["category_id"],
+                                      sub_category_id=sub_category_id)
+
         current_data = await state.get_data()
         #  print(f"current data cat id: {current_data}")
-        button_name = set(current_data["buttons_category_names"].copy())
-        if button_name:
-            text = f"Вы выбрали категорию: {markdown.hbold(message.text)}.\nВыберите подкатегорию товара."
-            keyboard = get_list_keyboard(list(button_name), placeholder="Выберите действие.")
-        else:
-            text = f"Вы выбрали категорию: {markdown.hbold(message.text)}.\nВыберите наименование товара."
-            keyboard = get_list_keyboard(list(button_name), placeholder="Выберите действие.")
-        await message.answer(text=text, reply_markup=keyboard)
-    else:
-        text = f"Указанной Вами категории нет в базе данных.\n Выберите категорию товаров."
 
-        keyboard = get_list_keyboard(button_name.copy(), placeholder="Выберите категорию.")
+        if current_data["buttons_category_list"]:
+            text = "Выберите товары для добавления в промо-акцию ☝️."
+            for i in current_data["buttons_category_list"]:
+                product = i[1]
+                keyboard = build_choice_product_for_promo(product_id=i[0], reaction="adding promo")
+                await message.answer(text=product, reply_markup=keyboard)
+            keyboard = get_keyboard("Завершить",
+                                    placeholder="Выберите действие")
+        else:
+            text = "Не удается загрузить список товаров из базы. Попробуйте позже."
+
+            keyboard = get_keyboard("Назад 🔙",
+                                    placeholder="Выберите действие")
         await message.answer(text=text, reply_markup=keyboard)
 
 
@@ -310,7 +316,7 @@ async def wrong_adding_promo_subcategories(message: types.Message, state: FSMCon
 
 
 #  -----------Function for get category of products for buttons-----------
-async def __get_category_keyboard(state: FSMContext, category_id: int = 0) -> None:
+async def __get_category_keyboard(state: FSMContext, category_id: int = 0, sub_category_id: int = 0) -> None:
     current_data = await state.get_data()
     #  pprint(f"curr data in get category = {current_data}")
     if current_data["category"] == "category":
@@ -327,6 +333,17 @@ async def __get_category_keyboard(state: FSMContext, category_id: int = 0) -> No
                 #  print(f"Buttons_list_subcat = {buttons_list}")
         except Exception as ex:
             print(f"Error list_sub_category: {ex}")
+    elif current_data["category"] == "products":
+        try:
+            async with moto_db:
+                buttons_list = await moto_db.get_products_for_promo(category_id=category_id,
+                                                                    sub_category_id=sub_category_id)
+                print(f"button_list in products after db request = {buttons_list}")
+                if buttons_list is None:
+                    buttons_list = []
+                    print(f"Anything wrong: Buttons_list_product = {buttons_list}")
+        except Exception as ex:
+            print(f"Error list_products buttons: {ex}")
 
     buttons_text = [x[1] for x in buttons_list]
     await state.update_data(buttons_category_list=buttons_list.copy(), buttons_category_names=buttons_text.copy())
