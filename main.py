@@ -15,6 +15,7 @@ ALLOWED_UPDATES = ['message', 'edited_message', 'callback_query', 'inline_query'
 
 
 async def start():
+
     logging.basicConfig(level=logging.INFO)
 
     bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode='HTML'))
