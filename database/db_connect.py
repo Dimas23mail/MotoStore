@@ -60,6 +60,7 @@ class RolizMotoDB:
             create_table_sub_categories_db = '''
                 CREATE TABLE IF NOT EXISTS sub_categories_db (
                 sub_category_id INTEGER PRIMARY KEY AUTOINCREMENT, 
+                sub_category_1c_id TEXT,
                 sub_category_name TEXT,
                 category_id INTEGER,
                 FOREIGN KEY (category_id) REFERENCES categories_db (category_id) 
@@ -76,16 +77,14 @@ class RolizMotoDB:
                 sub_category_id INTEGER, 
                 title TEXT,
                 brand TEXT,
-                engine TEXT,
-                spare_part_attribute INTEGER,
-                spare_types_id INTEGER,
                 description TEXT,
-                price REAL, 
                 image_url TEXT,
                 created_at TEXT,
+                id_1c TEXT,
+                image_1c TEXT,
+                id_type_1c TEXT,
                 FOREIGN KEY (category_id) REFERENCES categories_db (category_id),
-                FOREIGN KEY (sub_category_id) REFERENCES sub_categories_db (sub_category_id),
-                FOREIGN KEY (spare_types_id) REFERENCES spare_types_db (spare_types_id)
+                FOREIGN KEY (sub_category_id) REFERENCES sub_categories_db (sub_category_id)
                 )                 
                 '''
             await self.db.execute(create_table_products_db)
@@ -190,6 +189,143 @@ class RolizMotoDB:
             '''
             await self.db.execute(create_table_contacts_db)
             await self.db.commit()
+
+        async with self.lock:
+
+            create_table_storages_db = '''
+                CREATE TABLE IF NOT EXISTS storages_db (
+                storage_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                id_1c TEXT,
+                title TEXT,
+                address TEXT
+                )
+            '''
+            await self.db.execute(create_table_storages_db)
+            await self.db.commit()
+
+        async with self.lock:
+            create_table_products_in_storages_db = '''
+                            CREATE TABLE IF NOT EXISTS products_in_storages_db (
+                            id INTEGER PRIMARY KEY AUTOINCREMENT,
+                            id_products INTEGER,
+                            storage_id INTEGER,
+                            counts TEXT,
+                            costs_for_pce REAL,
+                            date_of_change TEXT,
+                            FOREIGN KEY (id_products) REFERENCES products_db (product_id),
+                            FOREIGN KEY (storage_id) REFERENCES storages_db (storage_id)
+                            )
+                        '''
+            await self.db.execute(create_table_products_in_storages_db)
+            await self.db.commit()
+
+        async with self.lock:
+            create_table_user_history_db = '''
+                            CREATE TABLE IF NOT EXISTS user_history_db (
+                            id INTEGER PRIMARY KEY AUTOINCREMENT,
+                            user_id INTEGER,
+                            products_history TEXT,
+                            date_of_change TEXT,
+                            FOREIGN KEY (user_id) REFERENCES users_db (user_id)
+                            )
+                        '''
+            await self.db.execute(create_table_user_history_db)
+            await self.db.commit()
+
+    async def insert_categories(self, categories: list) -> bool:
+        if categories is None:
+            return False
+        print(f"categories in db: {categories}")
+        async with self.lock:
+            insert_category = '''
+                INSERT INTO categories_db (category_name) VALUES (?)
+                '''
+            await self.db.executemany(insert_category, categories)
+            await self.db.commit()
+        return True
+
+    async def save_new_sub_category(self, sub_category_list: list = None) -> bool:
+        if sub_category_list is None:
+            return False
+        async with self.lock:
+            save_sub_category = '''
+                INSERT INTO sub_categories_db (sub_category_1c_id, sub_category_name, category_id) 
+                VALUES (?, ?, ?)
+            '''
+            for i in sub_category_list:
+                await self.db.execute(save_sub_category, i)
+            await self.db.commit()
+        return True
+
+    async def insert_products_from_xml(self, products_list: list = None) -> bool:
+        if products_list is None:
+            return False
+        #  print(f"product_list in db: {products_list}")
+        async with self.lock:
+            insert_products = '''
+                INSERT INTO products_db (category_id, sub_category_id, title, brand, description, image_url, 
+                created_at, id_1c, image_1c, id_type_1c)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            '''
+            for i in products_list:
+                #  print(f"i=\n{i}")
+                await self.db.execute(insert_products, i)
+            await self.db.commit()
+        return True
+
+    async def get_all_products(self) -> list:
+        async with self.lock:
+            get_all_products = '''
+                SELECT * FROM products_db
+            '''
+            cursor = await self.db.execute(get_all_products)
+            result_list = await cursor.fetchall()
+            await cursor.close()
+        return result_list
+
+    async def get_all_products_wo_id(self) -> list:
+        async with self.lock:
+            get_all_products = '''
+                SELECT category_id, sub_category_id, title, brand, description, image_url, created_at, id_1c, image_1c, 
+                id_type_1c                
+                FROM products_db
+            '''
+            cursor = await self.db.execute(get_all_products)
+            result_list = await cursor.fetchall()
+            await cursor.close()
+        return result_list
+
+    async def update_products_from_xml(self, products_list: list[tuple] = None) -> bool:
+        if products_list is None:
+            return False
+        async with self.lock:
+            update_products_db = '''
+                UPDATE products_db SET category_id = ?, sub_category_id = ?, title = ?, brand = ?, description = ?, 
+                image_url = ?, created_at = ?, image_1c = ?, id_type_1c = ?
+                WHERE id_1c = ?
+            '''
+            await self.db.executemany(update_products_db, products_list)
+            await self.db.commit()
+        return True
+
+    async def update_photo_url_products_db(self, photo_url_data: tuple) -> None:
+        async with self.lock:
+            update_photo_url = '''
+                UPDATE products_db SET image_url = ? WHERE product_id = ?
+            '''
+            await self.db.execute(update_photo_url, photo_url_data)
+            await self.db.commit()
+
+    async def get_file_path_from_products_db(self) -> list:
+        async with self.lock:
+            get_file_path = '''
+                SELECT product_id, image_1c FROM products_db 
+                WHERE image_url = "telegram_link" and image_1c != "path"
+            '''
+            cursor = await self.db.execute(get_file_path)
+            result_list = await cursor.fetchall()
+            await cursor.close()
+        return result_list.copy()
 
     async def save_new_user(self, created_at: str = None, user_tg_id: int = None) -> bool:
         if created_at is None or user_tg_id is None:
@@ -320,6 +456,16 @@ class RolizMotoDB:
                 SELECT * FROM categories_db
             '''
             cursor = await self.db.execute(get_categories)
+            result_list = await cursor.fetchall()
+            await cursor.close()
+        return result_list.copy()
+
+    async def get_all_sub_categories(self) -> list:
+        async with self.lock:
+            get_all_sub_categories = '''
+                SELECT * FROM sub_categories_db
+            '''
+            cursor = await self.db.execute(get_all_sub_categories)
             result_list = await cursor.fetchall()
             await cursor.close()
         return result_list.copy()

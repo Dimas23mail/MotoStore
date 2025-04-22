@@ -17,7 +17,8 @@ def product_group_dict_parse(source: dict) -> list[tuple]:
 
 #  Разбираем список товаров из import0_1.xml
 def products_dict_parse(source: dict) -> list[tuple]:
-    products_list = [("title", "description", "id_1c", "image_1c", "id_type_1c"),]
+    #  products_list = [("title", "description", "id_1c", "image_1c", "id_type_1c"),]
+    products_list = []
     tmp = source["КоммерческаяИнформация"]["Каталог"]["Товары"]["Товар"]
     for i in tmp:
         id_1c = i["Ид"]
@@ -26,15 +27,17 @@ def products_dict_parse(source: dict) -> list[tuple]:
         if "Картинка" in i.keys():
             image_1c = i["Картинка"]
         else:
-            image_1c = None
+            image_1c = ""
         id_type_1c = i["Группы"]["Ид"]
         products_list.append((title, description, id_1c, image_1c, id_type_1c))
 
     return products_list.copy()
 
 
+#  Разбираем склады из offers0_1.xml
 def storages_parse(source: dict) -> list[tuple]:
-    storages_list = [("id_1c", "title", "address"), ]
+    #  storages_list = [("id_1c", "title", "address"), ]
+    storages_list = []
     tmp = source["КоммерческаяИнформация"]["ПакетПредложений"]["Склады"]["Склад"]
     for i in tmp:
         id_1c = i["Ид"]
@@ -47,8 +50,10 @@ def storages_parse(source: dict) -> list[tuple]:
     return storages_list.copy()
 
 
+#  Разбираем количество товаров на складах из offers0_1.xml
 def products_in_storages_parse(source: dict) -> list[tuple]:
-    storages_list = [("id_product_1c", "id_storage_1c", "quantity", "price_for_pce"), ]
+    #  storages_list = [("id_product_1c", "id_storage_1c", "quantity", "price_for_pce"), ]
+    storages_list = []
     tmp = source["КоммерческаяИнформация"]["ПакетПредложений"]["Предложения"]["Предложение"]
     for i in tmp:
         id_product_1c = i["Ид"]

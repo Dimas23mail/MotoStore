@@ -1,5 +1,6 @@
 import asyncio
-import datetime, pytz
+import datetime
+import pytz
 
 from aiogram.filters import CommandStart, Command
 from aiogram import Router, types, F
@@ -97,8 +98,6 @@ async def command_start(message: types.Message, state: FSMContext):
     if message.from_user.id in ADMIN_ID:
         keyboard = start_admin_reply_keyboard
         await state.set_state(AdminToolsModule.main_state_admin)
-        async with moto_db:
-            await moto_db.make_db()
     else:
         keyboard = start_client_reply_keyboard
         await state.set_state(ClientToolsModule.main_state_client)
