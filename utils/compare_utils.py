@@ -5,19 +5,15 @@ from typing import List, Tuple, Any
 from storage import ValidateFieldsForDb
 
 
-def compare_tuple_lists(db_list: List[ValidateFieldsForDb], maked_list: List[ValidateFieldsForDb],
-                        field_key: str = None, field_skip: str = None) -> Tuple[List[ValidateFieldsForDb], List
-[ValidateFieldsForDb]] | Tuple[List[ValidateFieldsForDb], Any]:
+def compare_tuple_lists(db_list: list, maked_list: list, field_key: str = None, field_skip: list[str] = None) -> (
+        tuple[list, list] | tuple[list, Any]):
 
     if len(db_list) == 0:
         return maked_list.copy(), []
 
     db_by_key = defaultdict(list)
-    #  print(f"db_lenth = {len(db_list)}")
-    #  print(f"db_list:\n{db_list[0]}\n{db_list[3]}\n{db_list[100]}")
     for item_db in db_list:
         key = getattr(item_db, field_key)
-        #  print(f"key = {key}")
         db_by_key[key].append(item_db)
 
     completely_new = []
@@ -34,7 +30,7 @@ def compare_tuple_lists(db_list: List[ValidateFieldsForDb], maked_list: List[Val
             all_fields_match = True
             for field in fields(item_db):
                 field_name = field.name
-                if field_name == field_skip or field_name == field_key:
+                if field_name in field_skip or field_name == field_key:
                     continue
                 if getattr(item_db, field_name) != getattr(item_maked, field_name):
                     all_fields_match = False

@@ -209,7 +209,7 @@ class RolizMotoDB:
                             id INTEGER PRIMARY KEY AUTOINCREMENT,
                             id_products INTEGER,
                             storage_id INTEGER,
-                            counts TEXT,
+                            counts INTEGER,
                             costs_for_pce REAL,
                             date_of_change TEXT,
                             FOREIGN KEY (id_products) REFERENCES products_db (product_id),
@@ -295,13 +295,35 @@ class RolizMotoDB:
             await cursor.close()
         return result_list
 
+    async def get_products_id(self) -> list:
+        async with self.lock:
+            get_products_id = '''
+                SELECT id_1c, product_id FROM products_db
+            '''
+            cursor = await self.db.execute(get_products_id)
+            result_list = await cursor.fetchall()
+            await cursor.close()
+        return result_list
+
+    async def get_photo_url_from_product_id(self, product_id: int = None) -> list | None:
+        if product_id is None:
+            return None
+        async with self.lock:
+            get_photo_url_from_product_id = '''
+                SELECT image_url FROM products_db WHERE product_id = ?
+            '''
+            cursor = await self.db.execute(get_photo_url_from_product_id, (product_id, ))
+            result_tuple = await cursor.fetchone()
+            await cursor.close()
+        return result_tuple
+
     async def update_products_from_xml(self, products_list: list[tuple] = None) -> bool:
         if products_list is None:
             return False
         async with self.lock:
             update_products_db = '''
                 UPDATE products_db SET category_id = ?, sub_category_id = ?, title = ?, brand = ?, description = ?, 
-                image_url = ?, created_at = ?, image_1c = ?, id_type_1c = ?
+                created_at = ?, image_1c = ?, id_type_1c = ?
                 WHERE id_1c = ?
             '''
             await self.db.executemany(update_products_db, products_list)
@@ -582,3 +604,81 @@ class RolizMotoDB:
             result_list = await cursor.fetchone()
             await cursor.close()
         return result_list
+
+    async def get_all_storages(self) -> list:
+        async with self.lock:
+            get_all_storages = '''
+                SELECT id_1c, title, address FROM storages_db
+            '''
+            cursor = await self.db.execute(get_all_storages)
+            result_list = await cursor.fetchall()
+            await cursor.close()
+        return result_list
+
+    async def get_storages_id(self) -> list:
+        async with self.lock:
+            get_storages_id = '''
+                SELECT id_1c, storage_id FROM storages_db
+            '''
+            cursor = await self.db.execute(get_storages_id)
+            result_list = await cursor.fetchall()
+            await cursor.close()
+        return result_list
+
+    async def appending_storages(self, storages_list: list = None) -> bool:
+        if storages_list is None:
+            return False
+        async with self.lock:
+            appending_storages = '''
+                INSERT INTO storages_db (id_1c, title, address) VALUES (?, ?, ?)
+            '''
+            await self.db.executemany(appending_storages, storages_list)
+            await self.db.commit()
+        return True
+
+    async def updating_storages(self, storages_list: list = None) -> bool:
+        if storages_list is None:
+            return False
+        async with self.lock:
+            updating_storages = '''
+                UPDATE storages_db SET title = ?, address = ? WHERE id_1c = (?)
+            '''
+            await self.db.executemany(updating_storages, storages_list)
+            await self.db.commit()
+        return True
+
+    async def get_all_products_from_storage(self) -> list:
+        async with self.lock:
+            get_all_products_from_storage = '''
+                SELECT   id_products, storage_id, counts, costs_for_pce, date_of_change
+                FROM products_in_storages_db
+            '''
+            cursor = await self.db.execute(get_all_products_from_storage)
+            result_list = await cursor.fetchall()
+        await cursor.close()
+
+        return result_list
+
+    async def appending_products_in_storage(self, source_list: list = None) -> bool:
+        if source_list is None:
+            return False
+        async with self.lock:
+            appending_products = '''
+                INSERT INTO products_in_storages_db (id_products, storage_id, counts, costs_for_pce, date_of_change) 
+                VALUES (?, ?, ?, ?, ?)
+            '''
+            await self.db.executemany(appending_products, source_list)
+            await self.db.commit()
+        return True
+
+    async def updating_products_in_storage(self, source_list: list = None) -> bool:
+        if source_list is None:
+            return False
+        async with self.lock:
+            updating_products = '''
+                UPDATE products_in_storages_db SET counts = ?, costs_for_pce = ?, date_of_change = ? 
+                WHERE products_in_storages_db =? AND storage_id = ?
+            '''
+            await self.db.executemany(updating_products, source_list)
+            await self.db.commit()
+        return True

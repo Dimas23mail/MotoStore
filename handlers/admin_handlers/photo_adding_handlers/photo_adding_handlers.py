@@ -9,10 +9,10 @@ router = Router(name=__name__)
 
 @router.channel_post(F.photo)
 async def get_photo_channel_message(message: types.Message):
-    print(f"В канале получены фото: {message}")
+    print(f"В канале получены фото: {message.caption}")
     caption = message.caption
-    if caption.isdigit():
-        caption = int(caption)
+    if caption.split()[0].isdigit():
+        caption = int(caption.split()[0])
     photo_url = message.photo[-1].file_id
     photo_url_data = (photo_url, caption)
 
